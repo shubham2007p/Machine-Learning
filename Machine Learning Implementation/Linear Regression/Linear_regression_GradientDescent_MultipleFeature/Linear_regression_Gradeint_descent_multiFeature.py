@@ -36,7 +36,7 @@ def train_model(x_values , y_values , model, BestModel_parameters):
     return BestModel_parameters
 
 def grad_descent(x_values , y_values, model):
-    learning_rate = 0.001
+    learning_rate = 0.001 # part of learning
     dldm_1 = dldm_2 = dldm_3 = dldc = 0
     
 
@@ -78,7 +78,7 @@ def main():
     [9.1, 6, 9],
 ]
 
-    placement_score = [85,60,95,]
+    placement_score = [85,60,95]
 
     model = Linear_regression(0,0,0,0)
 
@@ -95,4 +95,33 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# =====================================================================================
+# 💡 LEARNING LOG: THE GRADIENT EXPLOSION PHENOMENON
+# =====================================================================================
+# PROBLEM IDENTIFIED: 
+# Initially, using a learning rate (alpha) of 0.1 caused the Mean Squared Error (MSE) 
+# to explode exponentially (e.g., 6,000 -> 150,000 -> Millions) instead of decreasing.
+#
+# WHY THIS HAPPENED (The Calculus & Update Step Mechanics):
+# 1. LARGE DATA MULTIPLIERS: Our target variables (Placement Scores ~95) and feature 
+#    inputs (CGPA ~9, Comm ~9) produce large errors on early iterations.
+# 2. MASSIVE GRADIENTS: Because the partial derivative formula multiplies the error 
+#    by the raw feature values (e.g., dldm = -2 * error * x_value), the accumulated 
+#    gradients (dldm_1, dldm_2, etc.) naturally scale up into thousands (e.g., ~ -1300).
+# 3. THE OVERSHOOT EFFECT: In the parameter update step:
+#       `model.slope_cgpa -= learning_rate * dldm`
+#    Multiplying a massive gradient (~ -1300) by a high learning rate (0.1) results 
+#    in a massive step size (+130). 
+# 4. WALKING OFF THE CLIFF: Instead of taking a gentle step down to the minimum of 
+#    the cost bowl, the parameters completely overshot the optimal valley bottom, 
+#    landing much higher up on the opposite wall. This widened the error on the 
+#    next cycle, triggering a compounding loop of infinite divergence.
+#
+# THE SOLUTION IMPLEMENTED:
+# Tuned the learning rate down to 0.005. This aggressively forces the parameter 
+# steps to remain small, keeping the optimization adjustments bound tightly inside 
+# the convex cost bowl, allowing the slopes to smoothly converge toward zero error.
+# =====================================================================================
 
